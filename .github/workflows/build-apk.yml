@@ -1,0 +1,63 @@
+name: Paras AI Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: "App name"
+        required: true
+        default: "Paras Generated App"
+      screens:
+        description: "Comma-separated screen names"
+        required: true
+        default: "Home,Dashboard,Settings"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.2"
+          channel: stable
+      - name: Create Flutter app
+        run: |
+          flutter create --org ai.paras.generated generated_app
+          python3 - <<'PY'
+          import os, re
+          name=os.environ.get("APP_NAME","Paras Generated App").replace("'","\\'")
+          screens=[x.strip() for x in os.environ.get("SCREENS","Home,Dashboard,Settings").split(",") if x.strip()]
+          tiles=",".join([f"ListTile(title: Text('{s.replace("'","\\'")}'), trailing: const Icon(Icons.arrow_forward), onTap: () {{}})" for s in screens])
+          dart=f"""import 'package:flutter/material.dart';
+
+void main() => runApp(const ParasGeneratedApp());
+
+class ParasGeneratedApp extends StatelessWidget {{
+  const ParasGeneratedApp({{super.key}});
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: '{name}',
+    theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+    home: Scaffold(
+      appBar: AppBar(title: const Text('{name}')),
+      body: ListView(children: [{tiles}]),
+    ),
+  );
+}}
+"""
+          open("generated_app/lib/main.dart","w").write(dart)
+          open("generated_app/android/app/src/main/AndroidManifest.xml","r").read()
+          PY
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          SCREENS: ${{ inputs.screens }}
+      - name: Build APK
+        working-directory: generated_app
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: paras-ai-apk
+          path: generated_app/build/app/outputs/flutter-apk/app-release.apk
