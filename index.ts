@@ -7,6 +7,23 @@ const sql = postgres(process.env.DATABASE_URL || "", { max: 5, idle_timeout: 20 
 const PORT = Number(process.env.PORT || 3000);
 
 async function db(){
+  const statements = [
+    sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`,
+    sql`CREATE TABLE IF NOT EXISTS users(id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())`,
+    sql`CREATE TABLE IF NOT EXISTS projects(id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT NOT NULL, idea TEXT NOT NULL, spec JSONB, status TEXT DEFAULT 'draft', created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())`,
+    sql`CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TIMESTAMPTZ NOT NULL)`,
+    sql`CREATE TABLE IF NOT EXISTS builds(id UUID PRIMARY KEY DEFAULT gen_random_uuid(), project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE, status TEXT DEFAULT 'queued', platform TEXT DEFAULT 'android', logs TEXT DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())`
+  ];
+  for (const q of statements) await q;
+}mport { Hono } from "hono";
+import postgres from "postgres";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
+
+const app = new Hono();
+const sql = postgres(process.env.DATABASE_URL || "", { max: 5, idle_timeout: 20 });
+const PORT = Number(process.env.PORT || 3000);
+
+async function db(){
   await sql`
     CREATE TABLE IF NOT EXISTS users(
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
