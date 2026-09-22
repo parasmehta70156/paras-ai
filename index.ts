@@ -107,5 +107,5 @@ app.get("/api/projects",async c=>{const u=await currentUser(c);if(!u)return c.js
 app.post("/api/projects",async c=>{const u=await currentUser(c);if(!u)return c.json({error:"Not logged in"},401);const {idea}=await c.req.json();if(!idea?.trim())return c.json({error:"Idea required"},400);const spec=specFromIdea(idea);const p=(await sql`INSERT INTO projects(user_id,name,idea,spec,status) VALUES(${u.id},${spec.appName},${idea.trim()},${JSON.stringify(spec)},'generated') RETURNING *`)[0];return c.json({project:p})});
 app.post("/api/projects/:id/builds",async c=>{const u=await currentUser(c);if(!u)return c.json({error:"Not logged in"},401);const id=c.req.param("id");const p=await sql`SELECT id FROM projects WHERE id=${id} AND user_id=${u.id}`;if(!p.length)return c.json({error:"Project not found"},404);const b=(await sql`INSERT INTO builds(project_id,status,platform,logs) VALUES(${id},'queued','android','Build queued by Paras AI') RETURNING *`)[0];return c.json({build:b})});
 
-db().then(()=>app.fire()).catch(e=>{console.error(e);process.exit(1)});
+db().catch(e=>{console.error(e);process.exit(1)});
 Bun.serve({port:PORT,fetch:app.fetch});
