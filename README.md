@@ -1,41 +1,33 @@
 # Paras AI
 
-AI-assisted mobile app builder foundation.
+Paras AI is an agent-first app builder: describe an app, let the coding agent plan it, create/edit project files, and keep the project persisted in PostgreSQL.
 
-## V1 — Core
-- Signup, login and logout
-- PostgreSQL users, projects and sessions
-- HTTP-only session authentication
-- Health endpoint
+## Current agent capabilities
+- Signup/login/logout with HTTP-only sessions
+- Persistent projects in PostgreSQL
+- Replit-style agent workspace UI
+- Autonomous coding loop using the OpenAI Responses API
+- Tool calls for `list_files`, `read_file`, `write_file`, and `delete_file`
+- Project file persistence in PostgreSQL
+- Agent run history and summaries
+- File browser and code preview
+- Existing Android build queue API retained for the next build-worker stage
 
-## V2 — Builder
-- Natural-language idea to app specification
-- Screen and feature inference
-- Project dashboard APIs
-- Generated Flutter/Dart code preview
-- Project update/delete APIs
+## Roadmap
+### V1 — Agent core
+Idea → AI plan → files → summary.
 
-## V3 — Build system
-- PostgreSQL build queue/history
-- Build status APIs
-- GitHub Actions Android APK + AAB workflow
-- Workflow artifacts
+### V2 — Coding workspace
+Live file diffs, richer project templates, preview, and iterative edit requests.
 
-## V4 — Product operations
-- Settings/configuration status
-- Admin statistics
-- Persistent build records
-- Environment-based secrets
+### V3 — Verification
+Sandboxed command/test tools, error capture, automatic retry and self-healing.
 
-## V5 — Expansion
-Ready to connect:
-- Real LLM provider via OPENAI_API_KEY
-- GitHub automation via GITHUB_TOKEN
-- Automated workflow dispatch/artifact linking
-- Visual screen editor/live preview
-- Billing/subscriptions
-- Self-healing retries
-- Artifact storage
+### V4 — Build & GitHub
+Real Android/Web builds, GitHub commits/branches, Railway deployment and artifact links.
+
+### V5 — Full app factory
+Persistent workspaces, templates/plugins, visual editor, multi-agent tasks, billing and production artifact storage.
 
 ## Run
 ```bash
@@ -43,24 +35,12 @@ bun install
 bun run start
 ```
 
-Environment:
-```
+Required Railway environment variables:
+```text
 DATABASE_URL=postgresql://...
-PORT=3000
-ADMIN_EMAIL=admin@example.com
 OPENAI_API_KEY=...
-GITHUB_TOKEN=...
+OPENAI_MODEL=gpt-5.6-luna
+PORT=3000
 ```
 
-## Android builds
-GitHub Actions → **Paras AI Android Build** → Run workflow.
-
-Inputs:
-- app_name
-- screens
-
-Outputs:
-- release APK
-- release AAB
-
-No secret keys are committed to this repository.
+`OPENAI_API_KEY` is intentionally never committed to GitHub. Without it, the agent UI can load but an AI run will return a configuration error.
