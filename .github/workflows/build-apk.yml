@@ -60,8 +60,8 @@ class ParasGeneratedApp extends StatelessWidget {{
       - name: Build APK
         working-directory: generated_app
         run: flutter build apk --release
-      - name: Upload APK
+      - name: Build AAB\n        working-directory: generated_app\n        run: flutter build appbundle --release\n      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: paras-ai-apk
-          path: generated_app/build/app/outputs/flutter-apk/app-release.apk
+          path: |\n            generated_app/build/app/outputs/flutter-apk/app-release.apk\n            generated_app/build/app/outputs/bundle/release/app-release.aab
