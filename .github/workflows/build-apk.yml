@@ -28,7 +28,11 @@ jobs:
           import os, re
           name=os.environ.get("APP_NAME","Paras Generated App").replace("'","\\'")
           screens=[x.strip() for x in os.environ.get("SCREENS","Home,Dashboard,Settings").split(",") if x.strip()]
-          tiles=",".join([f"ListTile(title: Text('{s.replace("'","\\'")}'), trailing: const Icon(Icons.arrow_forward), onTap: () {{}})" for s in screens])
+          tiles=[]
+          for s in screens:
+              safe=s.replace("'","\\'")
+              tiles.append("ListTile(title: Text('"+safe+"'), trailing: const Icon(Icons.arrow_forward), onTap: () {})")
+          tiles=",".join(tiles)
           dart=f"""import 'package:flutter/material.dart';
 
 void main() => runApp(const ParasGeneratedApp());
